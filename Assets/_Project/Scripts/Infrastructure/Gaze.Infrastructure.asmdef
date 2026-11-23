@@ -1,0 +1,14 @@
+{
+    "name": "Gaze.Infrastructure",
+    "rootNamespace": "Gaze.Infrastructure",
+    "references": ["Gaze.Domain", "Gaze.Application", "Gaze.Presentation", "Unity.InputSystem"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,0 +1,72 @@
+# Unity (basado en la plantilla oficial de GitHub)
+/[Ll]ibrary/
+/[Tt]emp/
+/[Oo]bj/
+/[Bb]uild/
+/[Bb]uilds/
+/[Ll]ogs/
+/[Uu]ser[Ss]ettings/
+/[Mm]emoryCaptures/
+/[Rr]ecordings/
+/[Aa]ssets/Plugins/Editor/JetBrains*
+
+# IDEs
+.vs/
+.vscode/
+.idea/
+.gradle/
+ExportedObj/
+.consulo/
+*.csproj
+*.unityproj
+*.sln
+*.slnx
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+*.pidb.meta
+*.pdb.meta
+*.mdb.meta
+
+# Crash reports / builds
+sysinfo.txt
+*.apk
+*.aab
+*.unitypackage
+*.app
+crashlytics-build.properties
+
+# Addressables / Burst
+/[Aa]ssets/[Aa]ddressable[Aa]ssets[Dd]ata/*/*.bin*
+/[Aa]ssets/[Ss]treamingAssets/aa.meta
+/[Aa]ssets/[Ss]treamingAssets/aa/*
+*_BurstDebugInformation_DoNotShip/
+
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Paquetes locales del canal (no se publican con el proyecto)
+/[Pp]ackages/com.mododebugon.kitpersonajes/
+/[Pp]ackages/com.mododebugon.kitgrabacion/
+/[Aa]ssets/_Production/
+/[Aa]ssets/_Production.meta
+
+# Herramientas de producción del canal (no se publican)
+/Assets/_Project/Scripts/Editor/Produccion/
+/Assets/_Project/Scripts/Editor/Produccion.meta
+
+# Herramientas de Claude y configuracion local (privado, no se publica)
+CLAUDE.md
+.claude/
+.mcp.json
+/[Pp]ackages/com.coplaydev.unity-mcp/
+/[Pp]ackages/packages-lock.json

@@ -1,0 +1,14 @@
+{
+    "name": "Gaze.Application",
+    "rootNamespace": "Gaze.Application",
+    "references": ["Gaze.Domain"],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": true
+}
