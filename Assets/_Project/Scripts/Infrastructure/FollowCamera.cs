@@ -31,11 +31,43 @@ namespace Gaze.Infrastructure
         [Tooltip("Degrees per pixel dragging with the right mouse button.")]
         [SerializeField] private float mouseSensitivity = 0.25f;
 
+        /// <summary>Where the camera is around the target, in degrees (0 = behind it if it faces +Z).</summary>
+        public float Yaw
+        {
+            get => yaw;
+            set => yaw = value;
+        }
+
+        public float Distance
+        {
+            get => distance;
+            set => distance = value;
+        }
+
+        /// <summary>Height of the camera over the target's feet.</summary>
+        public float Height
+        {
+            get => height;
+            set => height = value;
+        }
+
+        /// <summary>Height it looks at, over the target's feet.</summary>
+        public float LookHeight
+        {
+            get => lookHeight;
+            set => lookHeight = value;
+        }
+
+        /// <summary>Puts the camera in place at once, with no easing (for a shot that has to start framed).</summary>
+        public void Snap() => Place(1f);
+
         private void Start() => Place(1f);
 
         private void LateUpdate()
         {
-            ReadInput();
+            // When something else drives the input (see DemoInput), the player's devices do not turn the camera.
+            if (!DemoInput.IsOverridden)
+                ReadInput();
             Place(1f - Mathf.Exp(-smoothing * Time.deltaTime));
         }
 

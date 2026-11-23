@@ -107,8 +107,10 @@ namespace Gaze.Editor
             foreach (float x in new[] { -0.7f, 1.5f, 3.7f })
                 Torch(new Vector3(x, StairsTop + 1.5f, hallBack - 0.05f), Vector3.back);
 
-            // The wall full of repeated stones. Those at eye height are points of interest, but not marked:
-            // scenery the head ignores. One of them, halfway up, is the eye.
+            // The wall full of repeated stones, and four identical little stone windows among them at head height.
+            // Three are empty; the fourth has an eye sunk in the dark inside, hard to spot until the head looks at it.
+            // The stones and the empty windows are points of interest, but not marked: scenery the head ignores.
+            float[] windowZ = { -3f, 0.6f, 3f, 5.4f };
             const float eyeZ = 3f;
             var details = new GameObject("WallStones").transform;
             for (float z = -5.4f; z < 8.5f; z += 1.2f)
@@ -117,8 +119,8 @@ namespace Gaze.Editor
                 for (int row = 0; row < 3; row++)
                 {
                     float y = floor + 0.7f + row * 0.85f;
-                    bool isEyeSpot = Mathf.Abs(z - eyeZ) < 0.6f && row == 1;
-                    if (isEyeSpot)
+                    bool isWindowSpot = row == 1 && windowZ.Any(w => Mathf.Abs(z - w) < 0.6f);
+                    if (isWindowSpot)
                         continue;
                     GameObject stoneBlock = Box($"Stone_{z:0.0}_{row}", details, new Vector3(-1.37f, y, z),
                                                 new Vector3(0.08f, 0.6f, 0.9f), panel);
@@ -126,7 +128,9 @@ namespace Gaze.Editor
                         stoneBlock.AddComponent<InterestMarker>().IsInteresting = false;
                 }
             }
-            Eye("WallEye", new Vector3(-1.38f, FloorHeight(eyeZ) + 1.55f, eyeZ), Vector3.right, isInteresting: true);
+            foreach (float z in windowZ)
+                WallWindow(z == eyeZ ? "WallEye" : $"EmptyWindow_{z:0.0}", new Vector3(-1.4f, FloorHeight(z) + 1.55f, z),
+                           hasEye: z == eyeZ);
 
             // On the landing, two identical paintings: the one on the right is the marked one.
             Painting("PaintingLeft", new Vector3(0.6f, StairsTop + 1.5f, hallBack - 0.02f), Vector3.back, isInteresting: false);
@@ -152,6 +156,7 @@ namespace Gaze.Editor
             NewScene();
             Dungeon();
             Room(-8f, 8f, -9f, 3f, 4.5f);
+            Ceiling(-8f, 8f, -9f, 3f, 4.5f);
             Brazier(new Vector3(-7.2f, 0f, 2f));
             Brazier(new Vector3(7.2f, 0f, 2f));
 
@@ -299,22 +304,56 @@ namespace Gaze.Editor
         // ------------------------------------------------------------------ Props (our own designs)
 
         /// <summary>
-        /// An eye set in the wall: a stone socket, the white, the iris and the pupil, each a flat disc a little
-        /// further out. <paramref name="facing"/> is where it looks (out of the wall).
+        /// A small stone window set into the left wall of the stairs (the wall plane is at <paramref name="centre"/>.x):
+        /// four frame bars that stand out from the wall and a dark back, so what is inside is sunk in shadow and
+        /// hard to see from the side. With <paramref name="hasEye"/> there is an eye on the back; without it, the window
+        /// is empty and only a decoy (a point of interest that is not marked: the head ignores it).
         /// </summary>
-        private static void Eye(string name, Vector3 centre, Vector3 facing, bool isInteresting)
+        private static void WallWindow(string name, Vector3 centre, bool hasEye)
         {
             var root = new GameObject(name).transform;
-            root.SetPositionAndRotation(centre, Quaternion.LookRotation(facing));
+            root.position = centre;
+            Material frame = Mat("WindowFrame", new Color(0.36f, 0.33f, 0.29f));
+            Material back = Mat("WindowBack", new Color(0.07f, 0.065f, 0.06f));
 
-            Disc("Socket", root, 0.00f, 0.80f, Mat("EyeSocket", new Color(0.32f, 0.29f, 0.26f)));
-            Disc("White", root, 0.03f, 0.58f, Mat("EyeWhite", new Color(0.95f, 0.93f, 0.86f)));
-            Disc("Iris", root, 0.05f, 0.32f, Mat("EyeIris", new Color(0.85f, 0.3f, 0.15f)));
-            Transform pupil = Disc("Pupil", root, 0.07f, 0.15f, Mat("EyePupil", new Color(0.05f, 0.04f, 0.04f)));
+            // Outer size 0.9 x 0.9, bars 0.12 wide, standing 0.22 out of the wall.
+            const float depth = 0.22f, outer = 0.9f, bar = 0.12f, inner = outer - 2f * bar;
+            float x = centre.x + depth / 2f;
+            float offset = (outer - bar) / 2f;
+            Box("Top", root, new Vector3(x, centre.y + offset, centre.z), new Vector3(depth, bar, outer), frame);
+            Box("Bottom", root, new Vector3(x, centre.y - offset, centre.z), new Vector3(depth, bar, outer), frame);
+            Box("Near", root, new Vector3(x, centre.y, centre.z - offset), new Vector3(depth, inner, bar), frame);
+            Box("Far", root, new Vector3(x, centre.y, centre.z + offset), new Vector3(depth, inner, bar), frame);
+            Box("Back", root, new Vector3(centre.x + 0.04f, centre.y, centre.z), new Vector3(0.04f, inner, inner), back);
+            foreach (Collider collider in root.GetComponentsInChildren<Collider>())
+                Object.DestroyImmediate(collider);   // decoration: it must never get in the character's way
 
             var marker = root.gameObject.AddComponent<InterestMarker>();
-            marker.IsInteresting = isInteresting;
+            if (!hasEye)
+            {
+                marker.IsInteresting = false;
+                return;
+            }
+
+            // The eye on the dark back, looking out into the room (+X). Small and dim so it does not give itself away.
+            Transform pupil = Eye(root, new Vector3(centre.x + 0.07f, centre.y, centre.z), Vector3.right);
             Set(marker, "lookAt", pupil);
+        }
+
+        /// <summary>
+        /// An eye: a stone socket, the white, the iris and the pupil, each a flat disc a little further out.
+        /// <paramref name="facing"/> is where it looks. Returns the pupil (where the head aims).
+        /// </summary>
+        private static Transform Eye(Transform parent, Vector3 position, Vector3 facing)
+        {
+            var root = new GameObject("Eye").transform;
+            root.SetParent(parent, false);
+            root.SetPositionAndRotation(position, Quaternion.LookRotation(facing));
+
+            Disc("Socket", root, 0.00f, 0.52f, Mat("EyeSocket", new Color(0.16f, 0.14f, 0.12f)));
+            Disc("White", root, 0.02f, 0.38f, Mat("EyeWhite", new Color(0.72f, 0.68f, 0.58f)));
+            Disc("Iris", root, 0.035f, 0.21f, Mat("EyeIris", new Color(0.62f, 0.2f, 0.12f)));
+            return Disc("Pupil", root, 0.05f, 0.10f, Mat("EyePupil", new Color(0.03f, 0.025f, 0.025f)));
         }
 
         /// <summary>A flat cylinder facing the parent's +Z, pushed out by <paramref name="offset"/>.</summary>
@@ -408,6 +447,25 @@ namespace Gaze.Editor
             Wall("WallRight", room, new Vector3(xMax, height / 2f, centre.z), Vector3.right, depth, height, wall);
             Wall("WallFront", room, new Vector3(centre.x, height / 2f, zMin), Vector3.back, width, height, wall);
             Wall("WallBack", room, new Vector3(centre.x, height / 2f, zMax), Vector3.forward, width, height, wall);
+        }
+
+        /// <summary>
+        /// A dark ceiling for a room that is seen from low cameras (the Paintings scene, also filmed vertically): without it the
+        /// top of the picture is a black void over the wall. It is drawn only from below, casts no shadow (it must not block the
+        /// moonlight) and has no collider.
+        /// </summary>
+        private static void Ceiling(float xMin, float xMax, float zMin, float zMax, float height)
+        {
+            GameObject ceiling = GameObject.CreatePrimitive(PrimitiveType.Quad);
+            ceiling.name = "Ceiling";
+            Object.DestroyImmediate(ceiling.GetComponent<Collider>());
+            // Turned so its visible side (local -Z) looks down; local X is world X and local Y is world -Z.
+            ceiling.transform.SetPositionAndRotation(new Vector3((xMin + xMax) / 2f, height, (zMin + zMax) / 2f),
+                                                     Quaternion.Euler(-90f, 0f, 0f));
+            ceiling.transform.localScale = new Vector3(xMax - xMin, zMax - zMin, 1f);
+            var renderer = ceiling.GetComponent<Renderer>();
+            renderer.sharedMaterial = Mat("Ceiling", new Color(0.2f, 0.18f, 0.17f));
+            renderer.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
         }
 
         /// <summary>A wall whose face looks to the inside of the room; <paramref name="outward"/> points away from it.</summary>

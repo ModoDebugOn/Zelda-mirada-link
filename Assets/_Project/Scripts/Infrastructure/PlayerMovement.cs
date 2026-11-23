@@ -54,7 +54,9 @@ namespace Gaze.Infrastructure
 
         private void Update()
         {
-            Vector2 input = Vector2.ClampMagnitude(move.ReadValue<Vector2>(), 1f);
+            // The real devices, unless something else is driving the input (see DemoInput).
+            Vector2 raw = DemoInput.IsOverridden ? DemoInput.Override.Move : move.ReadValue<Vector2>();
+            Vector2 input = Vector2.ClampMagnitude(raw, 1f);
 
             // While the fixed path drives the body, the controller is off (it would fight the path).
             if (autopilot != null && autopilot.enabled)
