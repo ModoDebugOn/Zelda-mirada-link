@@ -11,7 +11,7 @@ Capas de debug para ver la regla (radio de interés, ángulo, límite del cuello
 con la pista encendida y apagada. Es una recreación propia, no el código de Nintendo: los valores son nuestros.
 
 ## Vídeo
-- Vídeo completo: _enlace a YouTube_
+- Vídeo completo: [La ayuda invisible de Zelda que siempre ignoraste](https://youtu.be/jUFZhUF-pbY)
 - Short: _enlace_
 
 ## Cómo probarlo
